@@ -2,11 +2,13 @@ import os
 os.system("cls")
 
 separador = "=-=" * 11
+cor1 = "\033[34m"
+fimcor = "\033[m"
 #\033 | 31m => Vermelho |32m => Verde |33m => Amarelo 34m=> Azul | 
 
 def main():
     while True:
-        print(f"\n\033[34m{separador}\033[m")
+        print(f"\n{cor1}{separador}{fimcor}")
         print("{:^34}".format("Menu Principal"))
         print(f"\033[34m{separador}\033[m\n")
         
@@ -21,7 +23,7 @@ def main():
         elif menuinicial == '2':
             novo_usuario() 
         elif menuinicial == '0':
-            print ("\n\033[31mSISTEMA ESTÁ ENCERRADO.\033[m \n", "\n\033[32mDados salvos com sucesso!\033")
+            print ("\n\033[31mSISTEMA ENCERRADO.\033[m \n", "\n\033[32mDados salvos com sucesso!\033")
             raise SystemExit
         elif menuinicial != '1' or menuinicial != '2' or menuinicial != '0':
             print("\033[31mOpção inválida.\033[m")
@@ -262,7 +264,7 @@ def mostrar_despesa(nick):
 while True:
     print(f"\033[34m{separador}\033[m\n")
     inicar = input("{:^34}".format("ENTER PARA INICIAR"))
-    if inicar != "9999":
+    if inicar != "9xrtz5pr":
         main()
     else:
         print("\033[31mOpção inválida.\033[m")
