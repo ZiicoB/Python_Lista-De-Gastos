@@ -1,0 +1,14 @@
+# Python_Lista-De-Gastos
+This project was created as an evaluation method, in Pyhon chair.
+college: Cesar - School
+
+With the aim of creating a program where registered users could store simple information, such as:
+- Where did he spend the money?
+- The amount spent.
+- Date the expense was incurred
+
+You can change, delete or check the information after it is registered.
+
+================================================================================================================
+The project was created in a simple way, but in the future, perhaps I will make changes to improve it or 
+use it as an initial idea to create software designed to organize personal information through a notes file.
