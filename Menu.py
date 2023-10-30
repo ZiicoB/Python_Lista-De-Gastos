@@ -23,6 +23,7 @@ def main():
         elif menuinicial == '2':
             novo_usuario() 
         elif menuinicial == '0':
+            os.system("cls")
             print ("\n\033[31mSISTEMA ENCERRADO.\033[m \n", "\n\033[32mDados salvos com sucesso!\033")
             raise SystemExit
         elif menuinicial != '1' or menuinicial != '2' or menuinicial != '0':
