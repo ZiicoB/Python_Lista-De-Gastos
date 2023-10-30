@@ -237,7 +237,7 @@ def mostrar_despesa(nick):
 
         print("| {:<25} | {:<25} | {}".format("\033[33mCategoria\033[m","\033[33mValor\033[m","\033[33mDia\033[m\n"))
 
-        for i, usuario in enumerate(linhas):
+        for i,usuario in enumerate(linhas):
             conta = usuario.strip().split(',')
             if conta[0] == nick:
                 usuario = conta[0]
