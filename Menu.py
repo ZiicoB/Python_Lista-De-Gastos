@@ -76,8 +76,8 @@ def novo_usuario():
         print(f"\033[34m{separador}\033[m\n")
 
         novaConta = open(f'{os.getcwd()}/Usuarios.csv', 'rt+')
-
         texto = novaConta.read()
+        
         lertexto = texto.split('\n')
         usuarios = [linha.split(', \n')[0] for linha in lertexto]
         #Verifica por linha, os usuarios existentes
@@ -164,7 +164,7 @@ def editar_despesa(nick):
         print(f"\033[34m{separador}\033[m\n")
 
         listadoUsuario = f"Arquivos/{nick}.csv"
-        
+
         with open(listadoUsuario, "r+") as docListas:
             linhas = docListas.readlines()
 
