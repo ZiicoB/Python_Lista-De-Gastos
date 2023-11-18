@@ -222,7 +222,7 @@ def editar_despesa(nick):
 
         # Sobrescrever o arquivo com as alterações
         with open(listadoUsuario, "w") as docListas:
-            docListas.writelines(linhas) 
+            docListas.writelines(linhas)
 
 
 def mostrar_despesa(nick):
