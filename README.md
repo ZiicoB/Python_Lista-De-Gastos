@@ -13,4 +13,4 @@ You can change, delete or check the information after it is registered.
 
 ===============================================
 
-  The project was created in a simple way, but in the future, perhaps I will make changes to improve it or use it as an initial idea to create software designed to organize personal information through a notes file.
+  The project was created in a simple way, but in the future, perhaps I will make changes to improve it
