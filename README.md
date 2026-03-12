@@ -10,7 +10,3 @@ With the aim of creating a program where registered users could store simple inf
 - Date the expense was incurred
 
 You can change, delete or check the information after it is registered.
-
-===============================================
-
-  The project was created in a simple way, but in the future, perhaps I will make changes to improve it
