@@ -4,24 +4,23 @@ Aplicativo de controle financeiro pessoal em Python (com interface gráfica desk
 
 Permite que usuários autenticados registrem, editem, filtrem e acompanhem seus gastos mensais e anuais com comparativo em relação ao salário mensal.
 
----
 
 ## Principais Funcionalidades
 
 * **Autenticação e Segurança:** Cadastro e login de usuários com senhas protegidas por hash `PBKDF2-HMAC-SHA256` (com salt) e opção **Salvar login** via token local protegido por **Windows DPAPI** (`CryptProtectData`).
 * **Interface Desktop (Tkinter — Paleta Holst):** Janela nativa fora do CMD usando a paleta `#1E293B`, `#334155`, `#5C6B66`, `#8A7D7B`, `#C8A99D` e `#F2E6D6`.
-* **Gestão de Despesas:** Cadastro, edição, busca por texto e exclusão de lançamentos com validação de categoria, data (`DD/MM` ou `DD/MM/AAAA`) e precisão decimal (`Decimal`).
-* **Digitação em Moeda Real:** Campos de valor e salário com máscara automática de centavos (`25` → `R$ 0,25`, `2500` → `R$ 25,00`).
+* **Gestão de Despesas:** Cadastro, edição, busca por texto e exclusão de lançamentos com validação de categoria, data (`DD/MM/AAAA`) e precisão decimal (`Decimal`).
+* **Digitação em Moeda Real:** Campos de valor e salário com máscara automática.
 * **Controle Mensal e Orçamento:** Seletor de **Mês atual** (`Total - Mês`), cálculo da **Média de Gasto Mensal**, cadastro de **Salário Mensal**, barra de progresso e indicação automática de **saldo disponível** ou **valor excedente (quanto vai ficar devendo)**.
 * **Resumo Anual e por Mês:** Tela dedicada com os gastos dos 12 meses do ano selecionado, total anual, média mensal e listagem detalhada dos lançamentos de cada mês.
 
----
+
 
 ## Requisitos
 
 * Python 3.10+ (utiliza apenas a biblioteca padrão do Python, incluindo `tkinter`).
 
----
+
 
 ## Como Executar
 
@@ -42,8 +41,9 @@ Executar no modo de terminal (CLI):
 ```bat
 python Menu.py --cli
 ```
+## Imagens
+<img width="1139" height="779" alt="image" src="https://github.com/user-attachments/assets/22619b2e-3c11-4b1f-98f5-786c1c19c4d5" />
 
----
 
 ## Estrutura do Projeto
 
@@ -56,7 +56,7 @@ python Menu.py --cli
 * `Arquivos/`: Arquivos CSV de despesas por usuário, salários e sessão local.
 * `tests/test_app.py`: Suíte de testes unitários e de fluxo (`unittest`).
 
----
+
 
 ## Testes
 
@@ -64,12 +64,11 @@ python Menu.py --cli
 python -m unittest discover -s tests -v
 ```
 
----
+
 
 ## Registro de Atualizações
 
 ### 25/11/2026 *(feito com IA)*
 * Correção de bugs críticos de fluxo (recursão infinita entre menus, validação de duplicidade e leitura/escrita em CSV), segurança (hash `PBKDF2` nas senhas, prevenção de *path traversal* e validação de entradas/datas) e limpeza do `.gitignore`.
 * Criação da interface gráfica desktop com a paleta Holst (`app_gui.py` e `ListaDeGastos.pyw`) e opção de salvar login com token protegido por DPAPI.
-* Implementação da máscara de moeda em centavos (`25` → `R$ 0,25`), seletor de mês atual (`Total - Mês`), média de gasto mensal, comparativo com salário/dívida excedente e tela de resumo anual/mensal.
-* Adição da suíte de testes automatizados em `tests/test_app.py`.
+* Adição da suíte de testes automatizados
