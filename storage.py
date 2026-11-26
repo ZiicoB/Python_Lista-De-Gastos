@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import calendar
 import csv
 import hashlib
 import hmac
@@ -176,17 +177,64 @@ def parse_salary(raw_salary: str) -> Decimal:
     return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-def parse_date(raw_date: str, today: date | None = None) -> str:
-    """Valida data nos formatos DD/MM ou DD/MM/AAAA e retorna DD/MM/AAAA."""
+def default_date_for_month(month_key: str, today: date | None = None) -> str:
+    """Retorna uma data válida 'DD/MM/AAAA' dentro do mês 'MM/AAAA' informado."""
+    ref = today or date.today()
+    try:
+        month_str, year_str = month_key.split("/")
+        month_num = int(month_str)
+        year_num = int(year_str)
+        last_day = calendar.monthrange(year_num, month_num)[1]
+        day_num = min(ref.day, last_day)
+        return date(year_num, month_num, day_num).strftime("%d/%m/%Y")
+    except (ValueError, IndexError):
+        return ref.strftime("%d/%m/%Y")
+
+
+def parse_date(
+    raw_date: str,
+    today: date | None = None,
+    *,
+    default_month_key: str | None = None,
+) -> str:
+    """Valida data nos formatos DD/MM, DD/MM/AA, DD/MM/AAAA, DDMMAAAA ou dia (com mês padrão)."""
     cleaned = raw_date.strip()
+    ref_today = today or date.today()
+
+    if default_month_key:
+        try:
+            def_m_str, def_y_str = default_month_key.split("/")
+            ref_month = int(def_m_str)
+            ref_year = int(def_y_str)
+        except ValueError:
+            ref_month = ref_today.month
+            ref_year = ref_today.year
+    else:
+        ref_month = ref_today.month
+        ref_year = ref_today.year
+
     if not cleaned:
+        if default_month_key:
+            return default_date_for_month(default_month_key, ref_today)
         raise ValidationError("A data não pode ficar vazia.")
 
-    reference_year = (today or date.today()).year
+    # Aceita apenas o dia (1-31) quando há um mês selecionado no painel.
+    if default_month_key and re.fullmatch(r"\d{1,2}", cleaned):
+        try:
+            parsed = date(ref_year, ref_month, int(cleaned))
+            return parsed.strftime("%d/%m/%Y")
+        except ValueError as exc:
+            raise ValidationError("Dia inválido para o mês selecionado.") from exc
+
+    # Aceita DDMMAAAA sem barras (8 dígitos).
+    if re.fullmatch(r"\d{8}", cleaned):
+        cleaned = f"{cleaned[:2]}/{cleaned[2:4]}/{cleaned[4:]}"
 
     try:
         if cleaned.count("/") == 1:
-            parsed = datetime.strptime(f"{cleaned}/{reference_year}", "%d/%m/%Y").date()
+            parsed = datetime.strptime(f"{cleaned}/{ref_year}", "%d/%m/%Y").date()
+        elif cleaned.count("/") == 2 and len(cleaned.rsplit("/", 1)[-1]) == 2:
+            parsed = datetime.strptime(cleaned, "%d/%m/%y").date()
         else:
             parsed = datetime.strptime(cleaned, "%d/%m/%Y").date()
         return parsed.strftime("%d/%m/%Y")
@@ -353,12 +401,14 @@ def add_expense(
     raw_amount: str,
     raw_date: str,
     base_dir: Path = BASE_DIR,
+    *,
+    default_month_key: str | None = None,
 ) -> Expense:
     """Valida e adiciona uma nova despesa ao arquivo do usuário."""
     valid_user = validate_username(username)
     valid_category = validate_category(category)
     valid_amount = parse_amount(raw_amount)
-    valid_date = parse_date(raw_date)
+    valid_date = parse_date(raw_date, default_month_key=default_month_key)
 
     expense_file = get_user_expense_file(valid_user, base_dir)
     with expense_file.open("a", encoding="utf-8", newline="") as handle:
@@ -391,12 +441,14 @@ def update_expense(
     raw_amount: str,
     raw_date: str,
     base_dir: Path = BASE_DIR,
+    *,
+    default_month_key: str | None = None,
 ) -> Expense:
     """Atualiza uma despesa do usuário pelo índice (base 0 na lista do usuário)."""
     valid_user = validate_username(username)
     valid_category = validate_category(category)
     valid_amount = parse_amount(raw_amount)
-    valid_date = parse_date(raw_date)
+    valid_date = parse_date(raw_date, default_month_key=default_month_key)
 
     raw_rows = _read_raw_expense_rows(valid_user, base_dir)
     user_indices = _locate_user_expense_indices(valid_user, raw_rows)

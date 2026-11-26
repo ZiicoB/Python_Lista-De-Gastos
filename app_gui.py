@@ -893,7 +893,9 @@ class ExpenseApp:
 
         self.var_category = tk.StringVar()
         self.var_amount = tk.StringVar(value="R$ 0,00")
-        self.var_date = tk.StringVar()
+        self.var_date = tk.StringVar(
+            value=storage.default_date_for_month(self.active_month_key)
+        )
 
         tk.Label(
             form_card,
@@ -925,7 +927,7 @@ class ExpenseApp:
             fg=COLOR_CREAM,
             font=(FONT_FAMILY, 9, "bold"),
         ).pack(side="left")
-        _style_button(
+        self.btn_today = _style_button(
             date_lbl_row,
             "Hoje",
             lambda: self.var_date.set(date.today().strftime("%d/%m/%Y")),
@@ -936,7 +938,8 @@ class ExpenseApp:
             font_size=8,
             padx=8,
             pady=2,
-        ).pack(side="right")
+        )
+        self.btn_today.pack(side="right")
 
         self.entry_date = _style_entry(form_card, self.var_date)
         self.entry_date.pack(fill="x", ipady=7, pady=(0, 10))
@@ -1126,7 +1129,7 @@ class ExpenseApp:
         self.selected_expense_index = None
         self.var_category.set("")
         self.var_amount.set("R$ 0,00")
-        self.var_date.set("")
+        self.var_date.set(storage.default_date_for_month(self.active_month_key))
         if not keep_feedback:
             self._set_form_feedback("")
         if hasattr(self, "tree"):
@@ -1140,6 +1143,7 @@ class ExpenseApp:
         self._month_label_to_key[label] = month_key
         if hasattr(self, "var_current_month"):
             self.var_current_month.set(label)
+            self._reset_form(keep_feedback=True)
             self._update_month_options()
             self._update_kpis_and_budget()
             self._refresh_table()
@@ -1322,25 +1326,39 @@ class ExpenseApp:
 
         try:
             if self.selected_expense_index is None:
-                created = storage.add_expense(self.current_user, cat, amount, dt, self.base_dir)
-                created_mk = storage.extract_month_key(created.expense_date)
+                created = storage.add_expense(
+                    self.current_user,
+                    cat,
+                    amount,
+                    dt,
+                    self.base_dir,
+                    default_month_key=self.active_month_key,
+                )
+                saved_mk = storage.extract_month_key(created.expense_date)
+                switched = bool(saved_mk and saved_mk != self.active_month_key)
+                if saved_mk:
+                    self.active_month_key = saved_mk
                 self._reset_form(keep_feedback=True)
-                if created_mk and created_mk != self.active_month_key:
+                if switched and saved_mk:
                     self._set_form_feedback(
-                        f"✓ Despesa salva em {storage.format_month_full_label(created_mk)}!",
+                        f"✓ Despesa salva em {storage.format_month_full_label(saved_mk)}!",
                         success=True,
                     )
                 else:
                     self._set_form_feedback("✓ Despesa adicionada com sucesso!", success=True)
             else:
-                storage.update_expense(
+                updated = storage.update_expense(
                     self.current_user,
                     self.selected_expense_index,
                     cat,
                     amount,
                     dt,
                     self.base_dir,
+                    default_month_key=self.active_month_key,
                 )
+                saved_mk = storage.extract_month_key(updated.expense_date)
+                if saved_mk:
+                    self.active_month_key = saved_mk
                 self._reset_form(keep_feedback=True)
                 self._set_form_feedback("✓ Despesa atualizada com sucesso!", success=True)
         except storage.ValidationError as exc:

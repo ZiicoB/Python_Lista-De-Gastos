@@ -94,6 +94,24 @@ class StorageTests(unittest.TestCase):
         with self.assertRaises(storage.ValidationError):
             storage.parse_date("29/02", today=date(2026, 2, 1))
 
+        # Suporte a mês padrão selecionado (dia isolado, campo vazio e DDMMAAAA)
+        self.assertEqual(
+            storage.parse_date("", today=date(2026, 11, 25), default_month_key="12/2026"),
+            "25/12/2026",
+        )
+        self.assertEqual(
+            storage.parse_date("10", today=date(2026, 11, 25), default_month_key="02/2026"),
+            "10/02/2026",
+        )
+        self.assertEqual(
+            storage.parse_date("28022026"),
+            "28/02/2026",
+        )
+        self.assertEqual(
+            storage.default_date_for_month("02/2026", today=date(2026, 1, 31)),
+            "28/02/2026",
+        )
+
     def test_expenses_crud_csv_commas_and_user_filtering(self) -> None:
         storage.register_user("joao", "senha123", self.base_dir)
 
@@ -444,6 +462,48 @@ class DesktopGUITests(unittest.TestCase):
             self.assertIsNone(storage.load_saved_session(self.base_dir))
         finally:
             root2.destroy()
+
+    def test_adding_expense_after_selecting_another_month(self) -> None:
+        storage.register_user("bruno", "1234", self.base_dir)
+        self.app.auth_username.set("bruno")
+        self.app.auth_password.set("1234")
+        self.app._submit_auth()
+
+        # Seleciona outro mês (Dezembro/2026) e adiciona gasto sem precisar redigitar a data
+        self.app.select_current_month("12/2026")
+        self.assertTrue(self.app.var_date.get().endswith("/12/2026"))
+        self.app.var_category.set("Ceia")
+        self.app.var_amount.set("12000")  # R$ 120,00
+        self.app._save_expense()
+
+        self.assertEqual(self.app.active_month_key, "12/2026")
+        self.assertEqual(self.app.kpi_total_var.get(), "R$ 120,00")
+        self.assertEqual(len(self.app.tree.get_children()), 1)
+
+        # Seleciona Agosto/2026 e digita apenas o dia "05"
+        self.app.select_current_month("08/2026")
+        self.app.var_category.set("Livro")
+        self.app.var_amount.set("4500")  # R$ 45,00
+        self.app.var_date.set("05")
+        self.app._save_expense()
+
+        self.assertEqual(self.app.active_month_key, "08/2026")
+        self.assertEqual(self.app.kpi_total_var.get(), "R$ 45,00")
+        self.assertEqual(len(self.app.tree.get_children()), 1)
+
+        # Botão Hoje preenche sempre a data do dia atual
+        self.app.btn_today.invoke()
+        self.assertEqual(self.app.var_date.get(), date.today().strftime("%d/%m/%Y"))
+
+        # Digita data de Março/2026 estando em Agosto: muda para Março e exibe o item na hora
+        self.app.var_category.set("Passagem")
+        self.app.var_amount.set("8000")  # R$ 80,00
+        self.app.var_date.set("15/03/2026")
+        self.app._save_expense()
+
+        self.assertEqual(self.app.active_month_key, "03/2026")
+        self.assertEqual(self.app.kpi_total_var.get(), "R$ 80,00")
+        self.assertEqual(len(self.app.tree.get_children()), 1)
 
 
 if __name__ == "__main__":
